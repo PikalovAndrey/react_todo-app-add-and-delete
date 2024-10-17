@@ -25,7 +25,6 @@ export const App: React.FC = () => {
   const [loader, setLoader] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [, setShouldFocus] = useState(true);
   const [loadingTodosCount, setLoadingTodosCount] = useState<number[]>([]);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -58,7 +57,6 @@ export const App: React.FC = () => {
 
     setTempTodo(temporaryTodo);
     setLoader(true);
-    setShouldFocus(false);
     setLoadingTodosCount(currentCount => [...currentCount, 0]);
 
     addTodo(temporaryTodo)
