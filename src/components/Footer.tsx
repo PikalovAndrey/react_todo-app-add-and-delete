@@ -1,16 +1,17 @@
 import classNames from 'classnames';
 import { Todo } from '../types/Todo';
 import { FilterOptions } from '../enums/FilterOptions';
+import { Dispatch, FC, SetStateAction } from 'react';
 
 interface FooterProps {
   todos: Todo[];
   completedTodos: Todo[];
   filter: FilterOptions;
-  setFilter: React.Dispatch<React.SetStateAction<FilterOptions>>;
+  setFilter: Dispatch<SetStateAction<FilterOptions>>;
   onCompletedTodosDeleted: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({
+export const Footer: FC<FooterProps> = ({
   todos,
   completedTodos,
   filter,
@@ -26,21 +27,19 @@ export const Footer: React.FC<FooterProps> = ({
       </span>
 
       <nav className="filter" data-cy="Filter">
-        <nav className="filter" data-cy="Filter">
-          {Object.values(FilterOptions).map(filterOption => (
-            <a
-              key={filterOption}
-              href={`#/${filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}`}
-              className={classNames('filter__link', {
-                selected: filter === filterOption,
-              })}
-              data-cy={`FilterLink${filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}`}
-              onClick={() => setFilter(filterOption)}
-            >
-              {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
-            </a>
-          ))}
-        </nav>
+        {Object.values(FilterOptions).map(filterOption => (
+          <a
+            key={filterOption}
+            href={`#/${filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}`}
+            className={classNames('filter__link', {
+              selected: filter === filterOption,
+            })}
+            data-cy={`FilterLink${filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}`}
+            onClick={() => setFilter(filterOption)}
+          >
+            {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+          </a>
+        ))}
       </nav>
 
       <button

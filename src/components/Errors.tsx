@@ -1,15 +1,13 @@
 import classNames from 'classnames';
 import { ErrorMessages } from '../enums/ErrorMessages';
+import { Dispatch, FC, SetStateAction } from 'react';
 
 interface ErrorsProps {
   errorMessage: ErrorMessages;
-  setErrorMessage: React.Dispatch<React.SetStateAction<ErrorMessages>>;
+  setErrorMessage: Dispatch<SetStateAction<ErrorMessages>>;
 }
 
-export const Errors: React.FC<ErrorsProps> = ({
-  errorMessage,
-  setErrorMessage,
-}) => {
+export const Errors: FC<ErrorsProps> = ({ errorMessage, setErrorMessage }) => {
   return (
     <div
       data-cy="ErrorNotification"

@@ -29,12 +29,6 @@ export const App: React.FC = () => {
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [todos, inputRef]);
-
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
   };
@@ -172,6 +166,12 @@ export const App: React.FC = () => {
     () => todos.filter(todo => todo.completed),
     [todos],
   );
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [todos, inputRef]);
 
   useEffect(() => {
     loadTodos(setTodos, setErrorMessage);
