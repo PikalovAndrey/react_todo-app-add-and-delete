@@ -6,9 +6,7 @@ interface HeaderProps {
   value: string;
   todos: Todo[];
   completedTodos: Todo[];
-  isSubmitting: boolean;
-  tempTodo: Todo | null;
-  shouldFocus: boolean;
+  loader: boolean;
   inputRef: React.RefObject<HTMLInputElement>;
   onTodosToggle: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
@@ -19,9 +17,7 @@ export const Header: React.FC<HeaderProps> = ({
   value,
   todos,
   completedTodos,
-  isSubmitting,
-  tempTodo,
-  shouldFocus,
+  loader: isSubmitting,
   inputRef,
   onTodosToggle,
   onSubmit,
@@ -46,7 +42,6 @@ export const Header: React.FC<HeaderProps> = ({
           type="text"
           className="todoapp__new-todo"
           placeholder="What needs to be done?"
-          autoFocus={shouldFocus && tempTodo == null}
           value={value}
           ref={inputRef}
           onChange={onInputChange}

@@ -10,16 +10,8 @@ export const deleteTodos = (todoId: number) => {
   return client.delete(`/todos/${todoId}`);
 };
 
-export const addTodo = ({
-  title,
-  userId,
-  completed,
-}: {
-  title: string;
-  userId: number;
-  completed: boolean;
-}): Promise<Todo> => {
-  return client.post('/todos', { title, userId, completed });
+export const addTodo = (newTodo: Omit<Todo, 'id'>): Promise<Todo> => {
+  return client.post('/todos', newTodo);
 };
 
 export const changeTodo = (todoId: number, updatedFields: Partial<Todo>) => {

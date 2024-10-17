@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { addTodo, changeTodo, deleteTodos, getTodos } from './api/todos';
+import { addTodo, changeTodo, deleteTodos } from './api/todos';
 import { Todo } from './types/Todo';
 import { FilterOptions } from './enums/FilterOptions';
 import { ErrorMessages } from './enums/ErrorMessages';
@@ -16,15 +16,16 @@ import { Footer } from './components/Footer';
 import { TodoList } from './components/TodoList';
 import { USER_ID } from './utils/USER_ID';
 import { Errors } from './components/Errors';
+import { loadTodos } from './utils/loadTodos';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [filter, setFilter] = useState<FilterOptions>(FilterOptions.ALL);
   const [errorMessage, setErrorMessage] = useState(ErrorMessages.NO_ERRORS);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loader, setLoader] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [shouldFocus, setShouldFocus] = useState(true);
+  const [, setShouldFocus] = useState(true);
   const [loadingTodosCount, setLoadingTodosCount] = useState<number[]>([]);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -33,7 +34,7 @@ export const App: React.FC = () => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
-  }, [todos]);
+  }, [todos, inputRef]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
@@ -42,7 +43,7 @@ export const App: React.FC = () => {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (inputValue.trim() === '') {
+    if (!inputValue.trim().length) {
       setErrorMessage(ErrorMessages.EMPTY_TITLE);
 
       return;
@@ -56,28 +57,18 @@ export const App: React.FC = () => {
     };
 
     setTempTodo(temporaryTodo);
-    setIsSubmitting(true);
+    setLoader(true);
     setShouldFocus(false);
     setLoadingTodosCount(currentCount => [...currentCount, 0]);
 
-    addTodo({ title: inputValue.trim(), userId: USER_ID, completed: false })
+    addTodo(temporaryTodo)
       .then((createdTodo: Todo) => {
         setTodos((currentTodos: Todo[]) => [...currentTodos, createdTodo]);
         setInputValue('');
         setErrorMessage(ErrorMessages.NO_ERRORS);
-        setShouldFocus(true);
-
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
       })
       .catch(() => {
-        setShouldFocus(true);
         setErrorMessage(ErrorMessages.ADDING_ERROR);
-
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
       })
       .finally(() => {
         if (inputRef.current) {
@@ -85,7 +76,7 @@ export const App: React.FC = () => {
           inputRef.current.focus();
         }
 
-        setIsSubmitting(false);
+        setLoader(false);
         setTempTodo(null);
         setLoadingTodosCount(currentCount =>
           currentCount.filter(todoId => todoId !== 0),
@@ -93,30 +84,28 @@ export const App: React.FC = () => {
       });
   };
 
-  const handleTodoDelete = useCallback(
-    (todoId: number) => {
-      setIsSubmitting(true);
-      setLoadingTodosCount(current => [...current, todoId]);
-      deleteTodos(todoId)
-        .then(() => {
-          setTodos(currentTodos =>
-            currentTodos.filter(todo => todo.id !== todoId),
-          );
-        })
-        .catch(() => {
-          setErrorMessage(ErrorMessages.DELETING_ERROR);
-        })
-        .finally(() => {
-          setIsSubmitting(false);
-          setLoadingTodosCount(current =>
-            current.filter(deletingTodoId => todoId !== deletingTodoId),
-          );
-        });
-    },
-    [todos],
-  );
+  const handleTodoDelete = useCallback((todoId: number) => {
+    setLoader(true);
+    setLoadingTodosCount(current => [...current, todoId]);
+    deleteTodos(todoId)
+      .then(() => {
+        setTodos(currentTodos =>
+          currentTodos.filter(todo => todo.id !== todoId),
+        );
+      })
+      .catch(() => {
+        setErrorMessage(ErrorMessages.DELETING_ERROR);
+      })
+      .finally(() => {
+        setLoader(false);
+        setLoadingTodosCount(current =>
+          current.filter(deletingTodoId => todoId !== deletingTodoId),
+        );
+      });
+  }, []);
+
   const handleCompletedTodosDeleted = useCallback(() => {
-    setIsSubmitting(true);
+    setLoader(true);
 
     const todosForDeleting = todos
       .filter(todo => todo.completed)
@@ -141,7 +130,7 @@ export const App: React.FC = () => {
             );
           }),
       ),
-    ).finally(() => setIsSubmitting(false));
+    ).finally(() => setLoader(false));
   }, [todos]);
 
   const handleTodosToggle = useCallback(() => {
@@ -157,7 +146,7 @@ export const App: React.FC = () => {
 
   const handleTodoToggle = useCallback(
     (todoId: number, currentCompletedStatus: boolean) => {
-      setIsSubmitting(true);
+      setLoader(true);
       changeTodo(todoId, { completed: !currentCompletedStatus })
         .then(() => {
           setTodos(currentTodos =>
@@ -171,9 +160,9 @@ export const App: React.FC = () => {
         .catch(() => {
           setErrorMessage(ErrorMessages.UPDATING_ERROR);
         })
-        .finally(() => setIsSubmitting(false));
+        .finally(() => setLoader(false));
     },
-    [todos],
+    [],
   );
 
   const todosAfterFiltering = useMemo(
@@ -187,18 +176,7 @@ export const App: React.FC = () => {
   );
 
   useEffect(() => {
-    const loadTodos = () => {
-      getTodos()
-        .then(loadedTodos => {
-          setTodos(loadedTodos);
-        })
-        .catch(error => {
-          setErrorMessage(ErrorMessages.LOADING_ERROR);
-          throw new Error(error);
-        });
-    };
-
-    loadTodos();
+    loadTodos(setTodos, setErrorMessage);
   }, []);
 
   useEffect(() => {
@@ -220,9 +198,7 @@ export const App: React.FC = () => {
           value={inputValue}
           todos={todos}
           completedTodos={completedTodos}
-          isSubmitting={isSubmitting}
-          tempTodo={tempTodo}
-          shouldFocus={shouldFocus}
+          loader={loader}
           inputRef={inputRef}
           onTodosToggle={handleTodosToggle}
           onSubmit={handleSubmit}

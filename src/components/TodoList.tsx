@@ -17,6 +17,10 @@ export const TodoList: React.FC<TodoListProps> = ({
   onTodoDelete,
   onTodoToggle,
 }) => {
+  const handleEndListener = (node: HTMLElement, done: () => void) => {
+    node.addEventListener('transitionend', done, false);
+  };
+
   return (
     <section className="todoapp__main" data-cy="TodoList">
       <TransitionGroup>
@@ -25,9 +29,7 @@ export const TodoList: React.FC<TodoListProps> = ({
             key={todo.id}
             classNames="item"
             timeout={300}
-            addEndListener={(node, done) => {
-              node.addEventListener('transitionend', done, false);
-            }}
+            addEndListener={handleEndListener}
           >
             <TodoComponent
               todo={todo}
@@ -43,9 +45,7 @@ export const TodoList: React.FC<TodoListProps> = ({
             key={tempTodo.id}
             classNames="item"
             timeout={300}
-            addEndListener={(node, done) => {
-              node.addEventListener('transitionend', done, false);
-            }}
+            addEndListener={handleEndListener}
           >
             <TodoComponent
               todo={tempTodo}
